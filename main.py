@@ -120,7 +120,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         print("余字节数:"+str(last_num))
         self.log_text.append("bin size :"+str(bin_size))
         # 进入boot
-        enter_cmd_str = "FFFFFFFF"
+        enter_cmd_str = "FFFFEFFF"
         print(enter_cmd_str+" 已发送")
         self.log_text.append("enter boot")
         Com_dev.only_send_hex(enter_cmd_str)
