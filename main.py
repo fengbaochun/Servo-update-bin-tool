@@ -161,6 +161,71 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
 
         pass
 
+    # 机械臂 升级 旋转模块
+    def dexarm_update_ratation_model(self):
+
+        one_buf_size = 50
+
+        file = open(self.bin_path, 'rb')
+        bin_size = os.path.getsize(self.bin_path)
+        
+        pack_num = bin_size // one_buf_size
+        last_num = bin_size % one_buf_size
+
+        self.cur_progressBar = pack_num + 1
+
+        # 初始化
+        # ser.write("M2100\r\n".encode())
+        # read_dev_answer() 
+        Com_dev.send("M2100\r\n")
+        # 进入boot
+        # ser.write("M2102U1\r\n".encode())
+        # read_dev_answer() 
+        Com_dev.send("M2102U1\r\n")
+
+        # 发送固件大小
+        bin_size_str_cmd = "M2102U2S"+str(bin_size)+"\r\n"
+        # ser.write(bin_size_str_cmd.encode())
+        # read_dev_answer() 
+        Com_dev.send(bin_size_str_cmd)
+
+
+        # 整包
+        for i in range(pack_num):
+            # 读取
+            bin_data = file.read(one_buf_size)
+            # 转换+.
+            bin_data_16 = str(binascii.b2a_hex(bin_data))[2:-1]
+            str1 = "M2102U3 <"+bin_data_16+">\r\n" #数据头为 gcode 指令 
+            print("---------SEND---:"+str1)
+            # 字符写入
+            # ser.write(str1.encode())
+            # read_dev_answer() 
+            Com_dev.send(str1)
+
+            print("-"+str(i)+"-")
+            self.progressBar.setValue((i*100)/self.cur_progressBar)
+            self.log_text.append("send data ...")            
+
+        if last_num>0:
+            print("last pack")
+            # 余包
+            # 读取
+            bin_data = file.read(last_num)
+            # 转换
+            bin_data_16 = str(binascii.b2a_hex(bin_data))[2:-1]
+            str1 = "M2102U3 <"+bin_data_16+">\r\n" #数据头为 gcode 指令 
+            print("---------SEND---:"+str1)
+            # 字符写入
+            # ser.write(str1.encode())
+            # read_dev_answer() 
+            Com_dev.send(str1)
+            self.log_text.append("send data ...")
+            self.progressBar.setValue(100)
+
+        print("bin_size = "+str(bin_size+11)+" transmission ok!!!")
+        pass
+
     def Start_update(self):
         if self.Button_opencom.text() == "Open":
             QMessageBox.question(self, "Open error", "The serial port is occupied or does not exist!!!", QMessageBox.Yes , QMessageBox.Yes)
@@ -173,6 +238,10 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                 QMessageBox.question(self, "OK", "update successed", QMessageBox.Yes , QMessageBox.Yes)   
 
             elif self.way_box.currentText() == "dex_arm":
+                self.Button_start.setText("update")
+                self.dexarm_update_ratation_model()
+                QMessageBox.question(self, "OK", "update successed", QMessageBox.Yes , QMessageBox.Yes)   
+
                 pass
 
 
@@ -194,3 +263,5 @@ if __name__ =='__main__':
     myWin.setFixedSize(myWin.width(), myWin.height())
     myWin.show()
     sys.exit(app.exec_())
+
+# https://blog.csdn.net/xyisv/article/details/88292870    
