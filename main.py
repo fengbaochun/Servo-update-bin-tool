@@ -99,8 +99,14 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         if ok:
             self.directory_text.setText(str(self.bin_path))                                                      
             print(str(self.bin_path))       
-            self.log_text.append("chose bin ok !!!")
-            self.log_text.append("bin_path :"+str(self.bin_path))
+
+            if os.path.getsize(self.bin_path) <= (1024*17):
+                self.log_text.append("chose bin ok !!!")
+                self.log_text.append("bin_path :"+str(self.bin_path))    
+            else:
+                QMessageBox.question(self, "Bin size error", "Please select the correct firmware!!!", QMessageBox.Yes , QMessageBox.Yes)
+
+
         
         pass
 
@@ -222,6 +228,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             Com_dev.send(str1)
             self.log_text.append("send data ...")
             self.progressBar.setValue(100)
+            self.log_text.append("update finash")
 
         print("bin_size = "+str(bin_size+11)+" transmission ok!!!")
         pass
